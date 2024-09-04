@@ -35,28 +35,64 @@ def reverse_geocode(lat, lon):
             return data['results'][0]['formatted_address']
     return "Unknown Location"
 
-# Function to log visit details
-def log_visit(address):
+# Function to log visit details to GitHub
+def log_visit_to_github(address):
     current_time = datetime.now()
     log_entry = {
         "Date": current_time.strftime("%Y-%m-%d"),
         "Time": current_time.strftime("%H:%M:%S"),
         "Address": address
     }
-    # Append the log entry to a CSV file
-    log_file = 'visit_log.csv'
-    
-    # Check if the log file exists, otherwise create it with headers
-    try:
-        log_df = pd.read_csv(log_file)
-    except FileNotFoundError:
-        log_df = pd.DataFrame(columns=["Date", "Time", "Address"])
 
-    # Add the new log entry
-    log_df = log_df.append(log_entry, ignore_index=True)
+    # Convert the log entry to CSV format (appendable row)
+    log_line = f'{log_entry["Date"]},{log_entry["Time"]},{log_entry["Address"]}\n'
 
-    # Save the updated log file
-    log_df.to_csv(log_file, index=False)
+    # GitHub repository details
+    repo_owner = 'your_github_username'
+    repo_name = 'your_repo_name'
+    file_path = 'visit_log.csv'  # Path to the log file in the GitHub repo
+    github_token = st.secrets["github_token"]  # Store your GitHub token in st.secrets
+
+    # GitHub API URL for the file
+    api_url = f"https://api.github.com/repos/{repo_owner}/{repo_name}/contents/{file_path}"
+
+    # Get the current content of the file from GitHub
+    headers = {
+        "Authorization": f"token {github_token}",
+        "Accept": "application/vnd.github.v3+json"
+    }
+
+    response = requests.get(api_url, headers=headers)
+    if response.status_code == 200:
+        file_data = response.json()
+        sha = file_data['sha']  # Get the file's SHA for updates
+        existing_content = base64.b64decode(file_data['content']).decode('utf-8')
+        new_content = existing_content + log_line
+    else:
+        # If the file does not exist, create a new file
+        sha = None
+        new_content = log_line
+
+    # Encode the new content in base64
+    new_content_base64 = base64.b64encode(new_content.encode('utf-8')).decode('utf-8')
+
+    # Prepare the data to send to GitHub
+    update_data = {
+        "message": "Log new visit",
+        "content": new_content_base64,
+        "branch": "main"  # Make sure to push to the correct branch
+    }
+
+    if sha:
+        update_data["sha"] = sha  # Add the SHA for existing files
+
+    # Update or create the file on GitHub
+    response = requests.put(api_url, headers=headers, data=json.dumps(update_data))
+    if response.status_code == 201 or response.status_code == 200:
+        st.write("Visit logged successfully.")
+    else:
+        st.write(f"Failed to log visit: {response.status_code} - {response.text}")
+
     
 # Detect user location on load
 get_user_location()
