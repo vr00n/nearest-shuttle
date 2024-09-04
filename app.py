@@ -73,7 +73,7 @@ if 'user_lat' in st.session_state and 'user_lon' in st.session_state:
 
         # Clean and fix Google Maps link formatting
         directions_url = f"https://www.google.com/maps/dir/?api=1&origin={st.session_state['user_lat']},{st.session_state['user_lon']}&destination={nearest_shuttle['Locations longitude and latitude']}&key={st.secrets['google_maps_api_key']}".replace(' ', '%20')
-        st.markdown(f"[Click here for directions]({directions_url})")
+        st.markdown(f"[Click here for directions to this stop]({directions_url})")
     else:
         st.write("No shuttle stops found for the selected depot.")
 else:
