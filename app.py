@@ -43,11 +43,8 @@ shuttle_data = load_data()
 # Step 1: User selects the depot (destination)
 destination = st.selectbox('Select your destination depot', shuttle_data['Destination (Depot)'].unique())
 
-# Step 2: Filter shuttle stops for the selected depot and exclude stops containing 'Depot' in 'Origin'
-filtered_shuttles = shuttle_data[
-    (shuttle_data['Destination (Depot)'] == destination) & 
-    (~shuttle_data['Origin'].str.contains('Depot', case=False, na=False))
-]
+# Step 2: Filter shuttle stops for the selected depot (no "Depot" filtering applied)
+filtered_shuttles = shuttle_data[shuttle_data['Destination (Depot)'] == destination]
 
 # Step 3: Calculate distance to find the nearest shuttle stop
 if 'user_lat' in st.session_state and 'user_lon' in st.session_state:
@@ -72,7 +69,7 @@ if 'user_lat' in st.session_state and 'user_lon' in st.session_state:
         nearest_shuttle = filtered_shuttles.sort_values('Distance').iloc[0]
 
         # Step 4: Output nearest shuttle stop details
-        st.write(f"The nearest shuttle stop is {nearest_shuttle['Origin']}. It departs at {nearest_shuttle['Pickup Times']}. Make sure you are here by this time.")
+        st.write(f"The nearest shuttle stop is {nearest_shuttle['Origin']}. It departs at {nearest_shuttle['Pickup Times AM']}. Make sure you are here by this time.")
 
         # Clean and fix Google Maps link formatting
         directions_url = f"https://www.google.com/maps/dir/?api=1&origin={st.session_state['user_lat']},{st.session_state['user_lon']}&destination={nearest_shuttle['Locations longitude and latitude']}&key={st.secrets['google_maps_api_key']}".replace(' ', '%20')
