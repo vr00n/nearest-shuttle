@@ -7,6 +7,7 @@ from streamlit_folium import folium_static
 from shapely.geometry import Point, Polygon
 from geopy.distance import geodesic
 import requests
+from datetime import datetime
 
 @st.cache
 def load_data():
@@ -34,6 +35,29 @@ def reverse_geocode(lat, lon):
             return data['results'][0]['formatted_address']
     return "Unknown Location"
 
+# Function to log visit details
+def log_visit(address):
+    current_time = datetime.now()
+    log_entry = {
+        "Date": current_time.strftime("%Y-%m-%d"),
+        "Time": current_time.strftime("%H:%M:%S"),
+        "Address": address
+    }
+    # Append the log entry to a CSV file
+    log_file = 'visit_log.csv'
+    
+    # Check if the log file exists, otherwise create it with headers
+    try:
+        log_df = pd.read_csv(log_file)
+    except FileNotFoundError:
+        log_df = pd.DataFrame(columns=["Date", "Time", "Address"])
+
+    # Add the new log entry
+    log_df = log_df.append(log_entry, ignore_index=True)
+
+    # Save the updated log file
+    log_df.to_csv(log_file, index=False)
+    
 # Detect user location on load
 get_user_location()
 
