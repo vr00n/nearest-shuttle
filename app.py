@@ -6,16 +6,7 @@ import folium
 from streamlit_folium import folium_static
 from shapely.geometry import Point, Polygon
 from geopy.distance import geodesic
-
-# Load shuttle data
-@st.cache
-def load_data():
-    file_path = 'shuttles.csv'
-    shuttle_data = pd.read_csv(file_path)
-    # Strip leading/trailing spaces from the relevant columns
-    shuttle_data['Origin'] = shuttle_data['Origin'].str.strip()
-    shuttle_data['Destination (Depot)'] = shuttle_data['Destination (Depot)'].str.strip()
-    return shuttle_data
+import requests
 
 # Function to get user location
 def get_user_location():
@@ -23,6 +14,16 @@ def get_user_location():
     if location:
         st.session_state['user_lat'] = location['coords']['latitude']
         st.session_state['user_lon'] = location['coords']['longitude']
+
+# Function to convert latitude and longitude to an address using Google Maps API
+def reverse_geocode(lat, lon):
+    url = f"https://maps.googleapis.com/maps/api/geocode/json?latlng={lat},{lon}&key={st.secrets['google_maps_api_key']}"
+    response = requests.get(url)
+    if response.status_code == 200:
+        data = response.json()
+        if data['results']:
+            return data['results'][0]['formatted_address']
+    return "Unknown Location"
 
 # Detect user location on load
 get_user_location()
@@ -43,6 +44,10 @@ filtered_shuttles = shuttle_data[
 if 'user_lat' in st.session_state and 'user_lon' in st.session_state:
     user_location = (st.session_state['user_lat'], st.session_state['user_lon'])
 
+    # Convert detected lat/long to a readable address
+    detected_address = reverse_geocode(st.session_state['user_lat'], st.session_state['user_lon'])
+    st.write(f"We detected your location as {detected_address}")
+
     def find_nearest_stop(row):
         try:
             stop_location = tuple(map(float, row['Locations longitude and latitude'].split(', ')))
@@ -60,8 +65,8 @@ if 'user_lat' in st.session_state and 'user_lon' in st.session_state:
         # Step 4: Output nearest shuttle stop details
         st.write(f"The nearest shuttle stop is {nearest_shuttle['Origin']}. It departs at {nearest_shuttle['Pickup Times']}. Make sure you are here by this time.")
 
-        # Provide directions using Google Maps API
-        directions_url = f"https://www.google.com/maps/dir/?api=1&origin={st.session_state['user_lat']},{st.session_state['user_lon']}&destination={nearest_shuttle['Locations longitude and latitude']}&key={st.secrets['google_maps_api_key']}"
+        # Clean and fix Google Maps link formatting
+        directions_url = f"https://www.google.com/maps/dir/?api=1&origin={st.session_state['user_lat']},{st.session_state['user_lon']}&destination={nearest_shuttle['Locations longitude and latitude']}&key={st.secrets['google_maps_api_key']}".replace(' ', '%20')
         st.markdown(f"[Click here for directions]({directions_url})")
     else:
         st.write("No shuttle stops found for the selected depot.")
