@@ -30,8 +30,8 @@ shuttle_data = load_data()
 # Step 1: User selects the depot (destination)
 destination = st.selectbox('Select your destination depot', shuttle_data['Destination (Depot)'].unique())
 
-# Step 2: Filter shuttle stops for the selected depot
-filtered_shuttles = shuttle_data[shuttle_data['Destination (Depot)'] == destination]
+# Step 2: Filter shuttle stops for the selected depot and exclude stops with '(Depot)' in the 'Origin' column
+filtered_shuttles = shuttle_data[(shuttle_data['Destination (Depot)'] == destination) & (~shuttle_data['Origin'].str.contains(r'\(Depot\)', regex=True))]
 
 # Step 3: Calculate distance to find the nearest shuttle stop
 if 'user_lat' in st.session_state and 'user_lon' in st.session_state:
