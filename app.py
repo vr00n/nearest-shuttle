@@ -40,6 +40,13 @@ get_user_location()
 # Load shuttle data
 shuttle_data = load_data()
 
+# Add a header for the shuttle stop information
+st.header("Nearest Shuttle Stop")
+
+# Add a link to the static shuttle map
+st.markdown("[Static Shuttle Map](https://shuttles-fall24.s3.us-east-1.amazonaws.com/nyc_shuttles_map.html)")
+
+
 # Step 1: User selects the depot (destination)
 destination = st.selectbox('Select your destination depot', shuttle_data['Destination (Depot)'].unique())
 
