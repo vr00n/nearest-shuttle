@@ -8,6 +8,15 @@ from shapely.geometry import Point, Polygon
 from geopy.distance import geodesic
 import requests
 
+@st.cache
+def load_data():
+    file_path = 'shuttles.csv'
+    shuttle_data = pd.read_csv(file_path)
+    # Strip leading/trailing spaces from the relevant columns
+    shuttle_data['Origin'] = shuttle_data['Origin'].str.strip()
+    shuttle_data['Destination (Depot)'] = shuttle_data['Destination (Depot)'].str.strip()
+    return shuttle_data
+
 # Function to get user location
 def get_user_location():
     location = get_geolocation()
