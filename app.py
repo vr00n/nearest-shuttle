@@ -44,8 +44,12 @@ if 'user_lat' in st.session_state and 'user_lon' in st.session_state:
     user_location = (st.session_state['user_lat'], st.session_state['user_lon'])
 
     def find_nearest_stop(row):
-        stop_location = tuple(map(float, row['Locations longitude and latitude'].split(', ')))
-        return geodesic(user_location, stop_location).miles
+        try:
+            stop_location = tuple(map(float, row['Locations longitude and latitude'].split(', ')))
+            return geodesic(user_location, stop_location).miles
+        except ValueError:
+            # If there's an issue with the location data, return a large distance to exclude the stop
+            return float('inf')
 
     # Calculate distances and find the nearest shuttle stop
     filtered_shuttles['Distance'] = filtered_shuttles.apply(find_nearest_stop, axis=1)
