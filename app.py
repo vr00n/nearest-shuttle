@@ -44,7 +44,7 @@ if 'user_lat' in st.session_state and 'user_lon' in st.session_state:
     filtered_shuttles['Distance'] = filtered_shuttles.apply(find_nearest_stop, axis=1)
 
     # Step 4: Check if there are any shuttle stops within 1 mile
-    nearby_shuttles = filtered_shuttles[filtered_shuttles['Distance'] <= 1].sort_values('Distance')
+    nearby_shuttles = filtered_shuttles[filtered_shuttles['Distance'] <= 2].sort_values('Distance')
 
     if not nearby_shuttles.empty:
         # If there are nearby shuttles, display the nearest one
