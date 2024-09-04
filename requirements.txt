@@ -1,4 +1,3 @@
-
 bokeh
 streamlit-bokeh-events
 mygeotab
@@ -6,3 +5,4 @@ folium
 streamlit_folium
 shapely
 streamlit_js_eval
+geopy
