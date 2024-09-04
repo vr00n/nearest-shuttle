@@ -42,11 +42,20 @@ if 'user_lat' in st.session_state and 'user_lon' in st.session_state:
         return geodesic(user_location, stop_location).miles
 
     filtered_shuttles['Distance'] = filtered_shuttles.apply(find_nearest_stop, axis=1)
-    nearest_shuttle = filtered_shuttles[filtered_shuttles['Distance'] <= 1].sort_values('Distance').iloc[0]
 
-    # Step 4: Output nearest shuttle stop details
-    st.write(f"The nearest shuttle stop is {nearest_shuttle['Origin']}. It departs at {nearest_shuttle['Pickup Times AM']}. Make sure you are here by this time.")
+    # Step 4: Check if there are any shuttle stops within 1 mile
+    nearby_shuttles = filtered_shuttles[filtered_shuttles['Distance'] <= 1].sort_values('Distance')
 
-    # Provide directions using Google Maps API (assuming `st.secrets["google_maps_api_key"]` is set)
-    directions_url = f"https://www.google.com/maps/dir/?api=1&origin={st.session_state['user_lat']},{st.session_state['user_lon']}&destination={nearest_shuttle['Locations longitude and latitude']}&key={st.secrets['google_maps_api_key']}"
-    st.markdown(f"[Click here for directions]({directions_url})")
+    if not nearby_shuttles.empty:
+        # If there are nearby shuttles, display the nearest one
+        nearest_shuttle = nearby_shuttles.iloc[0]
+        st.write(f"The nearest shuttle stop is {nearest_shuttle['Origin']}. It departs at {nearest_shuttle['Pickup Times AM']}. Make sure you are here by this time.")
+        
+        # Provide directions using Google Maps API
+        directions_url = f"https://www.google.com/maps/dir/?api=1&origin={st.session_state['user_lat']},{st.session_state['user_lon']}&destination={nearest_shuttle['Locations longitude and latitude']}&key={st.secrets['google_maps_api_key']}"
+        st.markdown(f"[Click here for directions]({directions_url})")
+    else:
+        # If no nearby shuttle stop is found
+        st.write("No shuttle stops were found within a 1-mile radius of your current location.")
+else:
+    st.write("Could not detect your location. Please enable location access and reload the app.")
