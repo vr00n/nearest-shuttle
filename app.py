@@ -48,8 +48,8 @@ def log_visit_to_github(address):
     log_line = f'{log_entry["Date"]},{log_entry["Time"]},{log_entry["Address"]}\n'
 
     # GitHub repository details
-    repo_owner = 'your_github_username'
-    repo_name = 'your_repo_name'
+    repo_owner = 'vr00n'
+    repo_name = 'nearest-shuttle'
     file_path = 'visit_log.csv'  # Path to the log file in the GitHub repo
     github_token = st.secrets["github_token"]  # Store your GitHub token in st.secrets
 
