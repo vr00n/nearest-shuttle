@@ -31,7 +31,7 @@ shuttle_data = load_data()
 destination = st.selectbox('Select your destination depot', shuttle_data['Destination (Depot)'].unique())
 
 # Step 2: Filter shuttle stops for the selected depot and exclude stops with '(Depot)' in the 'Origin' column
-filtered_shuttles = shuttle_data[(shuttle_data['Destination (Depot)'] == destination) & (~shuttle_data['Origin'].str.contains(r'\(Depot\)', regex=True))]
+filtered_shuttles = shuttle_data[(shuttle_data['Destination (Depot)'] == destination) & (~shuttle_data['Origin'].str.contains(r'Depot', regex=True))]
 st.write(filtered_shuttles)
 
 # Step 3: Calculate distance to find the nearest shuttle stop
