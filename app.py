@@ -30,10 +30,10 @@ shuttle_data = load_data()
 # Step 1: User selects the depot (destination)
 destination = st.selectbox('Select your destination depot', shuttle_data['Destination (Depot)'].unique())
 
-# Step 2: Filter shuttle stops for selected depot
+# Step 2: Filter shuttle stops for the selected depot
 filtered_shuttles = shuttle_data[shuttle_data['Destination (Depot)'] == destination]
 
-# Step 3: Calculate distance to find nearest shuttle stop within 1 mile
+# Step 3: Calculate distance to find the nearest shuttle stop
 if 'user_lat' in st.session_state and 'user_lon' in st.session_state:
     user_location = (st.session_state['user_lat'], st.session_state['user_lon'])
 
@@ -41,21 +41,15 @@ if 'user_lat' in st.session_state and 'user_lon' in st.session_state:
         stop_location = tuple(map(float, row['Locations longitude and latitude'].split(', ')))
         return geodesic(user_location, stop_location).miles
 
+    # Calculate distances and find the nearest shuttle stop
     filtered_shuttles['Distance'] = filtered_shuttles.apply(find_nearest_stop, axis=1)
+    nearest_shuttle = filtered_shuttles.sort_values('Distance').iloc[0]
 
-    # Step 4: Check if there are any shuttle stops within 1 mile
-    nearby_shuttles = filtered_shuttles[filtered_shuttles['Distance'] <= 2].sort_values('Distance')
+    # Step 4: Output nearest shuttle stop details
+    st.write(f"The nearest shuttle stop is {nearest_shuttle['Origin']}. It departs at {nearest_shuttle['Pickup Times AM']}. Make sure you are here by this time.")
 
-    if not nearby_shuttles.empty:
-        # If there are nearby shuttles, display the nearest one
-        nearest_shuttle = nearby_shuttles.iloc[0]
-        st.write(f"The nearest shuttle stop is {nearest_shuttle['Origin']}. It departs at {nearest_shuttle['Pickup Times AM']}. Make sure you are here by this time.")
-        
-        # Provide directions using Google Maps API
-        directions_url = f"https://www.google.com/maps/dir/?api=1&origin={st.session_state['user_lat']},{st.session_state['user_lon']}&destination={nearest_shuttle['Locations longitude and latitude']}&key={st.secrets['google_maps_api_key']}"
-        st.markdown(f"[Click here for directions]({directions_url})")
-    else:
-        # If no nearby shuttle stop is found
-        st.write("No shuttle stops were found within a 1-mile radius of your current location.")
+    # Provide directions using Google Maps API
+    directions_url = f"https://www.google.com/maps/dir/?api=1&origin={st.session_state['user_lat']},{st.session_state['user_lon']}&destination={nearest_shuttle['Locations longitude and latitude']}&key={st.secrets['google_maps_api_key']}"
+    st.markdown(f"[Click here for directions]({directions_url})")
 else:
     st.write("Could not detect your location. Please enable location access and reload the app.")
